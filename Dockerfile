@@ -110,7 +110,7 @@ ARG PIP_TOOLS_VERSION=7.6.1
 
 # Do not remove the following line, renovate uses it to propose version updates
 # renovate: datasource=github-tags depName=helm/helm
-ARG HELM_V3_VERSION=4.3.0
+ARG HELM_V4_VERSION=4.3.0
 
 # Do not remove the following line, renovate uses it to propose version updates
 # renovate: datasource=github-tags depName=gradle/gradle
@@ -174,9 +174,6 @@ RUN \
 
 # Install tekton
 RUN curl -L -o /tmp/tkn.tar.gz https://github.com/tektoncd/cli/releases/download/v${TEKTON_CLI_VERSION}/tkn_${TEKTON_CLI_VERSION}_Linux_x86_64.tar.gz && tar xvzf /tmp/tkn.tar.gz -C /usr/bin/ tkn && rm -f /tmp/tkn.tar.gz
-
-# Install helmv3
-RUN curl -L -o /tmp/helmv3.tar.gz https://get.helm.sh/helm-v${HELM_V3_VERSION}-linux-amd64.tar.gz && tar xvzf /tmp/helmv3.tar.gz -C /tmp; mv /tmp/linux-amd64/helm /usr/bin/helm && rm -f /tmp/helmv3.tar.gz && rm -rf /tmp/linux-amd64
 
 # Install yq
 RUN curl -L https://github.com/mikefarah/yq/releases/download/v${YQ_VERSION}/yq_linux_amd64 -o /usr/bin/yq && chmod +x /usr/bin/yq
@@ -251,6 +248,9 @@ ENV SSL_CERT_DIR=/etc/pki/tls/certs
 
 # Update paths
 ENV PATH="${PATH}:/home/renovate/python3.10/bin:/home/renovate/python3.11/bin:/home/renovate/python3.13/bin"
+
+# Install helmv4
+RUN go install -a helm.sh/helm/v4/cmd/helm@v${HELM_V4_VERSION} && go clean -cache -modcache
 
 # Install jsonnet-bundler
 RUN go install -a github.com/jsonnet-bundler/jsonnet-bundler/cmd/jb@latest && go clean -cache -modcache
