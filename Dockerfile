@@ -246,14 +246,15 @@ ENV SSL_CERT_DIR=/etc/pki/tls/certs
 # Update paths
 ENV PATH="${PATH}:/home/renovate/python3.10/bin:/home/renovate/python3.11/bin:/home/renovate/python3.13/bin"
 
-# Install helmv4
-RUN go install -a helm.sh/helm/v4/cmd/helm@v${HELM_V4_VERSION} && go clean -cache -modcache
-
-# Install yq
-RUN go install -a github.com/mikefarah/yq/v4@v${YQ_VERSION} && go clean -cache -modcache
-
-# Install jsonnet-bundler
-RUN go install -a github.com/jsonnet-bundler/jsonnet-bundler/cmd/jb@latest && go clean -cache -modcache
+# Install Go-based packages from source:
+# * helmv4
+# * yq
+# * jsonnet-bundler
+RUN \
+    go install -a helm.sh/helm/v4/cmd/helm@v${HELM_V4_VERSION} && \
+    go install -a github.com/mikefarah/yq/v4@v${YQ_VERSION} && \
+    go install -a github.com/jsonnet-bundler/jsonnet-bundler/cmd/jb@latest && \
+    go clean -cache -modcache
 
 # Use rustup to install the latest Rust toolchain
 RUN curl --proto '=https' --tlsv1.2 https://sh.rustup.rs -sSf | sh -s -- -y
