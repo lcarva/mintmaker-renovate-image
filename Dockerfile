@@ -205,7 +205,20 @@ USER 1001
 ENV PATH="/home/renovate/.local/bin:/home/renovate/node_modules/.bin:/home/renovate/go/bin:/home/renovate/.pyenv/bin:/home/renovate/.cargo/bin:/tmp/renovate/cache/others/go/bin:${PATH}"
 
 # Install package managers
-RUN npm install pnpm@${PNPM_VERSION} yarn@${YARN_VERSION} bun@${BUN_VERSION} && npm cache clean --force
+RUN npm install pnpm@${PNPM_VERSION} bun@${BUN_VERSION} && npm cache clean --force
+
+# Install yarn
+RUN \
+    git clone --depth 1 --branch v${YARN_VERSION} https://github.com/yarnpkg/yarn.git /tmp/yarn && \
+    pushd /tmp/yarn && \
+    npm install --legacy-peer-deps --no-package-lock && \
+    npm run build-bundle && \
+    chmod +x artifacts/yarn-${YARN_VERSION}.js && \
+    mkdir -p /home/renovate/.local/bin && \
+    mv artifacts/yarn-${YARN_VERSION}.js /home/renovate/.local/bin/yarn && \
+    cp /home/renovate/.local/bin/yarn /home/renovate/.local/bin/yarnpkg && \
+    popd && \
+    rm -rf /tmp/yarn
 
 # Install bundler
 RUN gem install bundler -v ${BUNDLER_VERSION}
