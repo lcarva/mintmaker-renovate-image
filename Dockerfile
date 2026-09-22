@@ -175,9 +175,6 @@ RUN \
 # Install tekton
 RUN curl -L -o /tmp/tkn.tar.gz https://github.com/tektoncd/cli/releases/download/v${TEKTON_CLI_VERSION}/tkn_${TEKTON_CLI_VERSION}_Linux_x86_64.tar.gz && tar xvzf /tmp/tkn.tar.gz -C /usr/bin/ tkn && rm -f /tmp/tkn.tar.gz
 
-# Install yq
-RUN curl -L https://github.com/mikefarah/yq/releases/download/v${YQ_VERSION}/yq_linux_amd64 -o /usr/bin/yq && chmod +x /usr/bin/yq
-
 # Install gradle
 RUN curl -Lo gradle.zip https://services.gradle.org/distributions/gradle-${GRADLE_VERSION}-bin.zip && \
     mkdir /opt/gradle-${GRADLE_VERSION} && unzip -d /opt/gradle-${GRADLE_VERSION} gradle.zip && \
@@ -251,6 +248,9 @@ ENV PATH="${PATH}:/home/renovate/python3.10/bin:/home/renovate/python3.11/bin:/h
 
 # Install helmv4
 RUN go install -a helm.sh/helm/v4/cmd/helm@v${HELM_V4_VERSION} && go clean -cache -modcache
+
+# Install yq
+RUN go install -a github.com/mikefarah/yq/v4@v${YQ_VERSION} && go clean -cache -modcache
 
 # Install jsonnet-bundler
 RUN go install -a github.com/jsonnet-bundler/jsonnet-bundler/cmd/jb@latest && go clean -cache -modcache
