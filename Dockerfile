@@ -150,6 +150,7 @@ RUN microdnf update -y && \
         openssl \
         python3.12 \
         python3.12-pip \
+        python3.14 \
         python3-dnf \
         ruby \
         golang \
@@ -239,7 +240,6 @@ COPY install-python.sh /home/renovate/install-python.sh
 RUN ./install-python.sh 3.10
 RUN ./install-python.sh 3.11
 RUN ./install-python.sh 3.13
-RUN ./install-python.sh 3.14
 
 # Ensure Python requests library uses system root certificates
 # Particularly important for Python virtual environments
@@ -250,7 +250,7 @@ ENV SSL_CERT_FILE=/etc/pki/tls/certs/ca-bundle.crt
 ENV SSL_CERT_DIR=/etc/pki/tls/certs
 
 # Update paths
-ENV PATH="${PATH}:/home/renovate/python3.10/bin:/home/renovate/python3.11/bin:/home/renovate/python3.13/bin:/home/renovate/python3.14/bin"
+ENV PATH="${PATH}:/home/renovate/python3.10/bin:/home/renovate/python3.11/bin:/home/renovate/python3.13/bin"
 
 # Install jsonnet-bundler
 RUN go install -a github.com/jsonnet-bundler/jsonnet-bundler/cmd/jb@latest && go clean -cache -modcache
