@@ -146,6 +146,7 @@ RUN microdnf update -y && \
     microdnf install -y \
         subscription-manager-rhsm-certificates \
         git \
+        nodejs24 \
         openssl \
         python3.12 \
         python3.12-pip \
@@ -163,6 +164,12 @@ RUN microdnf update -y && \
         krb5-devel && \
     microdnf clean all
 
+# Make NodeJS 24 executables the default
+RUN \
+    ln -s /usr/bin/npm-24 /usr/local/bin/npm && \
+    ln -s /usr/bin/node-24 /usr/local/bin/node && \
+    ln -s /usr/bin/npx-24 /usr/local/bin/npx
+
 
 # Install tekton
 RUN curl -L -o /tmp/tkn.tar.gz https://github.com/tektoncd/cli/releases/download/v${TEKTON_CLI_VERSION}/tkn_${TEKTON_CLI_VERSION}_Linux_x86_64.tar.gz && tar xvzf /tmp/tkn.tar.gz -C /usr/bin/ tkn && rm -f /tmp/tkn.tar.gz
@@ -172,15 +179,6 @@ RUN curl -L -o /tmp/helmv3.tar.gz https://get.helm.sh/helm-v${HELM_V3_VERSION}-l
 
 # Install yq
 RUN curl -L https://github.com/mikefarah/yq/releases/download/v${YQ_VERSION}/yq_linux_amd64 -o /usr/bin/yq && chmod +x /usr/bin/yq
-
-# Install nodejs
-RUN curl -o node-v${NODEJS_VERSION}-linux-x64.tar.xz https://nodejs.org/dist/v${NODEJS_VERSION}/node-v${NODEJS_VERSION}-linux-x64.tar.xz
-RUN tar xf node-v${NODEJS_VERSION}-linux-x64.tar.xz && \
-    mv node-v${NODEJS_VERSION}-linux-x64/bin/* /bin/ && \
-    mv node-v${NODEJS_VERSION}-linux-x64/include/* /include/ && \
-    mv node-v${NODEJS_VERSION}-linux-x64/lib/* /lib/ && \
-    rm -fr node-v${NODEJS_VERSION}-linux-x64 && \
-    rm -f node-v${NODEJS_VERSION}-linux-x64.tar.xz
 
 # Install gradle
 RUN curl -Lo gradle.zip https://services.gradle.org/distributions/gradle-${GRADLE_VERSION}-bin.zip && \
