@@ -172,9 +172,6 @@ RUN \
     ln -s /usr/bin/npx-24 /usr/local/bin/npx
 
 
-# Install tekton
-RUN curl -L -o /tmp/tkn.tar.gz https://github.com/tektoncd/cli/releases/download/v${TEKTON_CLI_VERSION}/tkn_${TEKTON_CLI_VERSION}_Linux_x86_64.tar.gz && tar xvzf /tmp/tkn.tar.gz -C /usr/bin/ tkn && rm -f /tmp/tkn.tar.gz
-
 # Install gradle
 RUN curl -Lo gradle.zip https://services.gradle.org/distributions/gradle-${GRADLE_VERSION}-bin.zip && \
     mkdir /opt/gradle-${GRADLE_VERSION} && unzip -d /opt/gradle-${GRADLE_VERSION} gradle.zip && \
@@ -250,10 +247,17 @@ ENV PATH="${PATH}:/home/renovate/python3.10/bin:/home/renovate/python3.11/bin:/h
 # * helmv4
 # * yq
 # * jsonnet-bundler
+# * tekton cli
 RUN \
     go install -a helm.sh/helm/v4/cmd/helm@v${HELM_V4_VERSION} && \
     go install -a github.com/mikefarah/yq/v4@v${YQ_VERSION} && \
     go install -a github.com/jsonnet-bundler/jsonnet-bundler/cmd/jb@latest && \
+    # Tekton CLI requires special handling due to its `replace` directives in go.mod \
+    git clone --depth 1 --branch v${TEKTON_CLI_VERSION} https://github.com/tektoncd/cli.git '/tmp/tkn-cli' && \
+    go -C '/tmp/tkn-cli' install -mod=vendor \
+        -ldflags "-X github.com/tektoncd/cli/pkg/cmd/version.clientVersion=v${TEKTON_CLI_VERSION}" \
+        ./cmd/tkn && \
+    rm -rf '/tmp/tkn-cli' && \
     go clean -cache -modcache
 
 # Use rustup to install the latest Rust toolchain
