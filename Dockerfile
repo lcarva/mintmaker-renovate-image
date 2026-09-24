@@ -221,7 +221,11 @@ RUN \
     rm -rf /tmp/yarn
 
 # Install bundler
-RUN gem install bundler -v ${BUNDLER_VERSION}
+RUN \
+    git clone --depth 1 --branch v${BUNDLER_VERSION} https://github.com/ruby/rubygems.git /tmp/bundler-cli && \
+    gem -C /tmp/bundler-cli/bundler build bundler.gemspec && \
+    gem install --local "/tmp/bundler-cli/bundler/bundler-${BUNDLER_VERSION}.gem" && \
+    rm -rf '/tmp/bundler-cli'
 
 # Use virtualenv isolation to avoid dependency issues with other global packages
 RUN pip3.12 install --user pipx==${PIPX_VERSION} && pip3.12 cache purge
