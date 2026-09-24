@@ -62,10 +62,12 @@ Some Python based projects can require a specific Python version,
 which is why the Dockerfile adds multiple Python versions via `microdnf install`.
 
 To install a hash-locked Python CLI tool for the current user, run
-`./install-python-tool.sh tools/<tool-name>/<path-to-requirements.txt>`. The requirements file
-must be inside a directory named for the command to expose. The helper creates
-an isolated environment under `${XDG_DATA_HOME:-$HOME/.local/share}/python-tools/`
-and links the command into `~/.local/bin`.
+`./install-python-tool.sh tools/<tool-name>/requirements.txt`. By default, the helper exposes a
+command matching the requirements directory name. If the package provides multiple commands, pass
+the command names after the requirements file, for example
+`./install-python-tool.sh tools/pip-tools/requirements.txt pip-compile pip-sync`. The helper creates
+an isolated environment under `${XDG_DATA_HOME:-$HOME/.local/share}/python-tools/<tool-name>/`
+and links the selected commands into `~/.local/bin`.
 
 ## Development
 
