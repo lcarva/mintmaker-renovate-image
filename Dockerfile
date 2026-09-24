@@ -1,6 +1,8 @@
 # Build with: podman build --ulimit nofile=65535:65535 . -t custom-renovate
 # Run with: podman run --rm <additional args> custom-renovate renovate
 
+FROM registry.redhat.io/rust-builder-image/rust-rhel10 AS rust
+
 FROM registry.access.redhat.com/ubi10-minimal
 LABEL description="Mintmaker - Renovate custom image" \
       summary="Mintmaker basic container image - a Renovate custom image" \
@@ -202,7 +204,7 @@ USER 1001
 # Enable renovate user's bin dirs,
 #   ~/.local/bin for Python executables
 #   ~/node_modules/.bin for renovate
-ENV PATH="/home/renovate/.local/bin:/home/renovate/node_modules/.bin:/home/renovate/go/bin:/home/renovate/.pyenv/bin:/home/renovate/.cargo/bin:/tmp/renovate/cache/others/go/bin:${PATH}"
+ENV PATH="/home/renovate/.local/bin:/home/renovate/node_modules/.bin:/home/renovate/go/bin:/home/renovate/.pyenv/bin:/tmp/renovate/cache/others/go/bin:/usr/local/share/rust/bin:${PATH}"
 
 # Install package managers
 RUN npm install pnpm@${PNPM_VERSION} bun@${BUN_VERSION} && npm cache clean --force
@@ -277,8 +279,8 @@ RUN \
     rm -rf '/tmp/tkn-cli' && \
     go clean -cache -modcache
 
-# Use rustup to install the latest Rust toolchain
-RUN curl --proto '=https' --tlsv1.2 https://sh.rustup.rs -sSf | sh -s -- -y
+# Install the latest Rust toolchain
+COPY --from=rust /usr/local/share/rust /usr/local/share/rust
 
 WORKDIR /home/renovate/renovate
 
