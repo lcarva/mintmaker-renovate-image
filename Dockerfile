@@ -1,4 +1,4 @@
-# Build with: podman build --ulimit nofile=65535:65535 . -t custom-renovate
+# Build with: podman build --secret id=netrc,src=$HOME/.netrc --ulimit nofile=65535:65535 . -t custom-renovate
 # Run with: podman run --rm <additional args> custom-renovate renovate
 
 FROM registry.redhat.io/rust-builder-image/rust-rhel10 AS rust
@@ -101,10 +101,6 @@ ARG HASHIN_VERSION=1.0.5
 # Do not remove the following line, renovate uses it to propose version updates
 # renovate: datasource=pypi depName=uv
 ARG UV_VERSION=0.12.17
-
-# Do not remove the following line, renovate uses it to propose version updates
-# renovate: datasource=pypi depName=hatch
-ARG HATCH_VERSION=1.18.1
 
 # Do not remove the following line, renovate uses it to propose version updates
 # renovate: datasource=pypi depName=pip-tools
@@ -232,10 +228,16 @@ RUN \
 # Use virtualenv isolation to avoid dependency issues with other global packages
 RUN pip3.12 install --user pipx==${PIPX_VERSION} && pip3.12 cache purge
 RUN pipx install --python python3.12 poetry==${POETRY_VERSION} pdm==${PDM_VERSION} pipenv==${PIPENV_VERSION} \
-    hashin==${HASHIN_VERSION} uv==${UV_VERSION} hatch==${HATCH_VERSION} pip-tools==${PIP_TOOLS_VERSION} \
+    hashin==${HASHIN_VERSION} uv==${UV_VERSION} pip-tools==${PIP_TOOLS_VERSION} \
     git+https://github.com/konflux-ci/pipeline-migration-tool.git@v${PIPELINE_MIGRATION_TOOL_VERSION}\
     && pipx inject hashin certifi\
     && rm -fr ~/.cache/pipx && pip3.12 cache purge
+
+COPY install-python-tool.sh /home/renovate/install-python-tool.sh
+COPY --chown=1001:0 tools /tmp/tools
+RUN --mount=type=secret,id=netrc,target=/home/renovate/.netrc,uid=1001,gid=0,mode=0400 \
+    ./install-python-tool.sh /tmp/tools/hatch/requirements.txt && \
+    rm -rf /tmp/tools /home/renovate/install-python-tool.sh
 
 # Install pyenv
 RUN curl https://pyenv.run | sh

@@ -61,6 +61,12 @@ from each other's dependencies.
 Some Python based projects can require a specific Python version,
 which is why the Dockerfile adds multiple Python versions via `microdnf install`.
 
+To install a hash-locked Python CLI tool for the current user, run
+`./install-python-tool.sh tools/<tool-name>/<path-to-requirements.txt>`. The requirements file
+must be inside a directory named for the command to expose. The helper creates
+an isolated environment under `${XDG_DATA_HOME:-$HOME/.local/share}/python-tools/`
+and links the command into `~/.local/bin`.
+
 ## Development
 
 ### Lint
@@ -80,6 +86,7 @@ make lint
 ```bash
 hadolint --failure-threshold warning --config .hadolint.yaml Dockerfile
 shellcheck -x install-python.sh
+shellcheck -x install-python-tool.sh
 markdownlint-cli2 --config .markdownlint.json README.md AGENTS.md
 actionlint -shellcheck=shellcheck .github/workflows/*.yaml
 ```
@@ -89,15 +96,19 @@ actionlint -shellcheck=shellcheck .github/workflows/*.yaml
 ### Build
 
 ```bash
-podman build --ulimit nofile=65535:65535 . -t custom-renovate
+podman build --secret id=netrc,src=$HOME/.netrc --ulimit nofile=65535:65535 . -t custom-renovate
 ```
+
+The build uses the Red Hat Lightwell Python index for the hash-locked Hatch install, so `~/.netrc`
+must contain credentials for `packages.redhat.com`.
 
 ### Lint coverage
 
 | Location                                 | Linter                                   |
 | ---------------------------------------- | ---------------------------------------- |
 | `Dockerfile` `RUN` shell                 | hadolint (+ shellcheck where applicable) |
-| `install-python.sh`                      | shellcheck                               |
+| `install-python.sh`                       | shellcheck                               |
+| `install-python-tool.sh`                  | shellcheck                               |
 | `.github/workflows/*.yaml` inline `run:` | actionlint + shellcheck                  |
 | `README.md`, `AGENTS.md`                 | markdownlint                             |
 
