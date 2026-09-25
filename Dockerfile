@@ -83,10 +83,6 @@ ARG BUNDLER_VERSION=4.0.21
 ARG PIPX_VERSION=1.17.4
 
 # Do not remove the following line, renovate uses it to propose version updates
-# renovate: datasource=pypi depName=poetry
-ARG POETRY_VERSION=2.4.3
-
-# Do not remove the following line, renovate uses it to propose version updates
 # renovate: datasource=pypi depName=uv
 ARG UV_VERSION=0.12.17
 
@@ -211,7 +207,7 @@ RUN \
 
 # Use virtualenv isolation to avoid dependency issues with other global packages
 RUN pip3.12 install --user pipx==${PIPX_VERSION} && pip3.12 cache purge
-RUN pipx install --python python3.12 poetry==${POETRY_VERSION} \
+RUN pipx install --python python3.12 \
     uv==${UV_VERSION} \
     git+https://github.com/konflux-ci/pipeline-migration-tool.git@v${PIPELINE_MIGRATION_TOOL_VERSION}\
     && rm -fr ~/.cache/pipx && pip3.12 cache purge
@@ -224,6 +220,7 @@ RUN --mount=type=secret,id=netrc,target=/home/renovate/.netrc,uid=1001,gid=0,mod
     ./install-python-tool.sh /tmp/tools/pdm/requirements.txt && \
     ./install-python-tool.sh /tmp/tools/pip-tools/requirements.txt pip-compile pip-sync && \
     ./install-python-tool.sh /tmp/tools/pipenv/requirements.txt pipenv pipenv-resolver && \
+    ./install-python-tool.sh /tmp/tools/poetry/requirements.txt && \
     rm -rf /tmp/tools /home/renovate/install-python-tool.sh
 
 # Install pyenv
